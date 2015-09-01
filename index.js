@@ -25,16 +25,13 @@ function mapDest(src, dest, options) {
     throw new TypeError('expected a string');
   }
 
-  if (typeof dest !== 'string') {
+  if (typeof dest === 'object') {
     options = dest;
     dest = null;
   }
 
   options = options || {};
   var fp = src;
-
-  var isMatch = filterFn(fp, options);
-  if (!isMatch) return false;
 
   // if `options.flatten` is defined, use the `src` basename
   if (options.flatten) fp = path.basename(fp);
@@ -55,48 +52,21 @@ function mapDest(src, dest, options) {
 }
 
 /**
- * Default filter function.
- *
- * @param {String} `fp`
- * @param {Object} `opts`
- * @return {Boolean} Returns `true` if a file matches.
- */
-
-function filterFn(fp, opts) {
-  var filter = opts.filter;
-  var isMatch = true;
-
-  if (!filter) return isMatch;
-
-  // if `options.filter` is a function, use it to
-  // conditionally exclude a file from the result set
-  if (typeof filter === 'function') {
-    isMatch = filter(fp);
-
-  // if `options.filter` is a string and matches a `fs.lstat`
-  // method, call the `fs.lstat` method on the file
-  } else if (typeof filter === 'string') {
-    validateMethod(filter, opts);
-    try {
-      isMatch = fs.lstatSync(fp)[filter]();
-    } catch (err) {
-      isMatch = false;
-    }
-  }
-  return isMatch;
-}
-
-/**
  * Default rename function.
  */
 
-function renameFn(dest, src, options) {
-  options = options || {};
-  if (typeof options.rename === 'function') {
-    var ctx = parsePath(src);
-    return options.rename.call(ctx, dest, src, options);
+function renameFn(dest, src, opts) {
+  var isArray = Array.isArray(src);
+  opts = opts || {};
+
+  if (typeof opts.rename === 'function') {
+    var ctx = parsePath(isArray ? src[0] : src);
+    return opts.rename.call(ctx, dest, src, opts);
   }
-  return dest ? path.join(dest, src) : src;
+
+  return dest
+    ? path.join(dest, src)
+    : isArray ? '' : src;
 }
 
 
@@ -104,29 +74,13 @@ function unixify(fp) {
   return fp.split('\\').join('/');
 }
 
-function replaceExt(fp, options) {
+function replaceExt(fp, opts) {
   var re = {first: /(\.[^\/]*)?$/, last: /(\.[^\/\.]*)?$/};
-  options = options || {};
-  if (typeof options.extDot === 'undefined') {
-    options.extDot = 'first';
+  opts = opts || {};
+  if (typeof opts.extDot === 'undefined') {
+    opts.extDot = 'first';
   }
-  return fp.replace(re[options.extDot], options.ext);
-}
-
-/**
- * When the `filter` option is a string, validate
- * that the it's a valid `fs.lstat` method name.
- *
- * @param {String} `method`
- * @return {Boolean}
- */
-
-function validateMethod(method) {
-  var methods = ['isFile', 'isDirectory', 'isSymbolicLink'];
-  if (methods.indexOf(method) < 0) {
-    var msg = '[options.filter] `' + method + '` is not a valid fs.lstat method name';
-    throw new Error(msg);
-  }
+  return fp.replace(re[opts.extDot], opts.ext);
 }
 
 /**
@@ -134,3 +88,9 @@ function validateMethod(method) {
  */
 
 module.exports = mapDest;
+
+/**
+ * Expose `renameFn`
+ */
+
+module.exports.rename = renameFn;
