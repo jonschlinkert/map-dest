@@ -49,7 +49,7 @@ function renameFn(dest, src, opts) {
   }
 
   var fp = typeof src === 'string' ? src : '';
-  return dest ? path.join(dest, src) : fp;
+  return dest ? path.join(dest, fp) : fp;
 }
 
 function fromArray(src, dest, opts) {
