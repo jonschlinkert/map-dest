@@ -69,10 +69,16 @@ describe('options', function () {
   });
 
   describe('options.destBase', function () {
-    it('should prepend destBase to dest:', function () {
+    it('should prepend destBase to generated dest:', function () {
       var actual = mapDest('a/b/c.txt', {destBase: 'one/two'});
       assert(actual.src === 'a/b/c.txt');
       assert(actual.dest === 'one/two/a/b/c.txt');
+    });
+
+    it('should prepend destBase to dest:', function () {
+      var actual = mapDest('a/b/c.txt', 'foo', {destBase: 'one/two'});
+      assert(actual.src === 'a/b/c.txt');
+      assert(actual.dest === 'one/two/foo/a/b/c.txt');
     });
   });
 
@@ -89,7 +95,7 @@ describe('options', function () {
     it('should expose target properties as `this` to rename function:', function () {
       var actual = mapDest('index.js', 'foo/bar.js', {
         rename: function (dest, fp, options) {
-          return path.join(this.dest.dirname, 'blog', this.src.basename);
+          return path.join(path.dirname(dest), 'blog', path.basename(fp));
         }
       });
       actual.dest.should.equal('foo/blog/index.js');

@@ -4,7 +4,6 @@ var stylish = require('jshint-stylish');
 var jshint = require('gulp-jshint');
 var mocha = require('gulp-mocha');
 
-
 gulp.task('jshint', function() {
   return gulp.src('*.js')
     .pipe(jshint())
