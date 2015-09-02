@@ -8,7 +8,6 @@
 'use strict';
 
 var path = require('path');
-var parsePath = require('parse-filepath');
 
 /**
  * Calculate destination paths.
@@ -39,14 +38,15 @@ function mapDest(src, dest, opts) {
   // use rename function to modify dest path
   dest = renameFn(dest, src, opts);
 
-  // if `opts.cwd` is defined, prepend it to `src`
-  if (opts.cwd) src = path.join(opts.cwd, src);
+  if (opts.cwd) {
+    src = path.join(opts.cwd, src);
+  }
 
-  return new File({
+  return {
     options: opts,
     src: src,
     dest: unixify(dest || '')
-  });
+  };
 }
 
 /**
@@ -65,34 +65,21 @@ function renameFn(dest, src, opts) {
   }
 
   if (typeof opts.rename === 'function') {
-    var ctx = {};
-    ctx.src = parsePath(src || '');
-    ctx.dest = parsePath(dest || '');
-    return opts.rename.call(ctx, dest, src, opts);
+    return opts.rename(dest, src, opts || {});
   }
 
   if (opts.destBase) {
     dest = path.join(opts.destBase, dest || '');
   }
-  return dest ? path.join(dest, src) : src;
+
+  var fp = typeof src === 'string' ? src : '';
+  return dest ? path.join(dest, src) : fp;
 }
 
 function filesArray(src, dest, opts) {
   return src.map(function (fp) {
     return mapDest(fp, dest, opts);
   });
-}
-
-/**
- * This is a placeholder.
- *
- */
-
-function File(file) {
-  for (var key in file) {
-    this[key] = file[key];
-  }
-  return this;
 }
 
 function replaceExt(fp, opts) {
