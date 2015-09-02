@@ -1,8 +1,3 @@
-
 var mapDest = require('./');
-
-
-var res = mapDest('c.md', 'foo', {cwd: 'a/b'});
-
-
-console.log(res);
+console.log(mapDest('d.md', {cwd: 'a/b/c'}));
+console.log(mapDest('d.md', {cwd: 'a/b/c', ext: '.html'}));
