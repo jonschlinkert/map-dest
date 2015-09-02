@@ -20,33 +20,9 @@ var path = require('path');
 
 function mapDest(src, dest, opts) {
   if (Array.isArray(src)) {
-    return filesArray(src, dest, opts);
+    return fromArray(src, dest, opts);
   }
-
-  if (typeof src !== 'string') {
-    throw new TypeError('expected a string');
-  }
-
-  if (typeof dest === 'object') {
-    opts = dest;
-    dest = null;
-  }
-
-  src = unixify(src);
-  opts = opts || {};
-
-  // use rename function to modify dest path
-  dest = renameFn(dest, src, opts);
-
-  if (opts.cwd) {
-    src = path.join(opts.cwd, src);
-  }
-
-  return {
-    options: opts,
-    src: src,
-    dest: unixify(dest || '')
-  };
+  return [fromString(src, dest, opts)];
 }
 
 /**
@@ -76,10 +52,37 @@ function renameFn(dest, src, opts) {
   return dest ? path.join(dest, src) : fp;
 }
 
-function filesArray(src, dest, opts) {
+function fromArray(src, dest, opts) {
   return src.map(function (fp) {
-    return mapDest(fp, dest, opts);
+    return fromString(fp, dest, opts);
   });
+}
+
+function fromString(src, dest, opts) {
+  if (typeof src !== 'string') {
+    throw new TypeError('expected a string');
+  }
+
+  if (typeof dest === 'object') {
+    opts = dest;
+    dest = null;
+  }
+
+  src = unixify(src);
+  opts = opts || {};
+
+  // use rename function to modify dest path
+  dest = renameFn(dest, src, opts);
+
+  if (opts.cwd) {
+    src = path.join(opts.cwd, src);
+  }
+
+  return {
+    options: opts,
+    src: src,
+    dest: unixify(dest || '')
+  };
 }
 
 function replaceExt(fp, opts) {
