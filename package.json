@@ -19,9 +19,6 @@
   "scripts": {
     "test": "mocha"
   },
-  "dependencies": {
-    "parse-filepath": "^0.6.3"
-  },
   "devDependencies": {
     "gulp": "^3.9.0",
     "gulp-istanbul": "^0.10.0",
@@ -31,5 +28,31 @@
     "mocha": "*",
     "should": "*"
   },
-  "keywords": []
+  "keywords": [
+    "config",
+    "configuration",
+    "dest",
+    "destination",
+    "expand",
+    "files array",
+    "files object",
+    "files",
+    "normalize",
+    "options",
+    "src",
+    "src-dest",
+    "target",
+    "task"
+  ],
+  "verb": {
+    "related": {
+      "list": [
+        "files-objects",
+        "expand-config",
+        "expand-files",
+        "expand-task",
+        "expand-target"
+      ]
+    }
+  }
 }
