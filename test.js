@@ -23,7 +23,16 @@ describe('mapDest', function () {
   describe('no dest', function () {
     it('should create a dest when no `dest` argument is passed:', function () {
       var actual = mapDest('a/b/c.txt');
-      assert.deepEqual(actual, {src: 'a/b/c.txt', dest: 'a/b/c.txt'});
+      assert(actual.src === 'a/b/c.txt');
+      assert(actual.dest === 'a/b/c.txt');
+    });
+  });
+
+  describe('no dest', function () {
+    it('should work when src is an array:', function () {
+      var actual = mapDest(['a.txt', 'b.txt']);
+      assert(actual[0].src === 'a.txt');
+      assert(actual[1].src === 'b.txt');
     });
   });
 });
@@ -32,59 +41,58 @@ describe('options', function () {
   describe('options.flatten', function () {
     it('should flatten dest when no `dest` argument is passed:', function () {
       var actual = mapDest('a/b/c.txt', {flatten: true});
-      assert.deepEqual(actual, {src: 'a/b/c.txt', dest: 'c.txt'});
+      assert(actual.src === 'a/b/c.txt');
+      assert(actual.dest === 'c.txt');
     });
   });
 
   describe('options.ext', function () {
     it('should replace the destination extension with given ext:', function () {
       var actual = mapDest('a/b/c.txt', {ext: '.foo'});
-      assert.deepEqual(actual, {src: 'a/b/c.txt', dest: 'a/b/c.foo'});
+      assert(actual.src === 'a/b/c.txt');
+      assert(actual.dest === 'a/b/c.foo');
     });
   });
 
   describe('options.cwd', function () {
     it('should prepend cwd to src:', function () {
       var actual = mapDest('a/b/c.txt', {cwd: 'one/two'});
-      assert.deepEqual(actual, {src: 'one/two/a/b/c.txt', dest: 'a/b/c.txt'});
+      assert(actual.src === 'one/two/a/b/c.txt');
+      assert(actual.dest === 'a/b/c.txt');
     });
 
     it('should prepend cwd to src and flatten dest:', function () {
       var actual = mapDest('a/b/c.txt', {cwd: 'one/two', flatten: true});
-      assert.deepEqual(actual, {src: 'one/two/a/b/c.txt', dest: 'c.txt'});
+      assert(actual.src === 'one/two/a/b/c.txt');
+      assert(actual.dest === 'c.txt');
     });
   });
 
-  describe('options.filter', function () {
-    it('should support custom filter functions:', function () {
-      var actual = mapDest('a/b/c.txt', {
-        filter: function (str) {
-          return !/\.txt/.test(str);
-        }
-      });
-      assert(!actual);
-    });
-
-    it('should filter by fs.lstat method (false if file !exists):', function () {
-      assert(!mapDest('a/b/c.txt', {filter: 'isFile'}));
-    });
-
-    it('should filter by fs.lstat method (truthy if file exists):', function () {
-      assert(mapDest('index.js', {filter: 'isFile'}));
-      var actual = mapDest('index.js', {filter: 'isFile'});
-      assert(actual.src === 'index.js');
+  describe('options.destBase', function () {
+    it('should prepend destBase to dest:', function () {
+      var actual = mapDest('a/b/c.txt', {destBase: 'one/two'});
+      assert(actual.src === 'a/b/c.txt');
+      assert(actual.dest === 'one/two/a/b/c.txt');
     });
   });
-
 
   describe('options.rename', function () {
     it('should support custom rename functions:', function () {
       var actual = mapDest('a/b/c.md', {
-        rename: function (str) {
-          return
+        rename: function (dest, src, opts) {
+          return src;
         }
       });
-
-      // assert(actual.src === 'a/b/c.html');
+      assert(actual.dest === 'a/b/c.md');
     });
+
+    it('should expose target properties as `this` to rename function:', function () {
+      var actual = mapDest('index.js', 'foo/bar.js', {
+        rename: function (dest, fp, options) {
+          return path.join(this.dest.dirname, 'blog', this.src.basename);
+        }
+      });
+      actual.dest.should.equal('foo/blog/index.js');
+    });
+  });
 });

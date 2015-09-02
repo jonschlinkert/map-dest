@@ -7,12 +7,11 @@
 
 'use strict';
 
-var fs = require('fs');
 var path = require('path');
 var parsePath = require('parse-filepath');
 
 /**
- * Calculate destination paths based on configuration.
+ * Calculate destination paths.
  *
  * @param {String|Array} `src`
  * @param {String} `dest`
@@ -20,35 +19,34 @@ var parsePath = require('parse-filepath');
  * @return {Object}
  */
 
-function mapDest(src, dest, options) {
+function mapDest(src, dest, opts) {
+  if (Array.isArray(src)) {
+    return filesArray(src, dest, opts);
+  }
+
   if (typeof src !== 'string') {
     throw new TypeError('expected a string');
   }
 
   if (typeof dest === 'object') {
-    options = dest;
+    opts = dest;
     dest = null;
   }
 
-  options = options || {};
-  var fp = src;
-
-  // if `options.flatten` is defined, use the `src` basename
-  if (options.flatten) fp = path.basename(fp);
-
-  // if `options.ext` is defined, use it to replace extension
-  if (options.hasOwnProperty('ext')) {
-    fp = replaceExt(fp, options);
-  }
+  src = unixify(src);
+  opts = opts || {};
 
   // use rename function to modify dest path
-  var result = renameFn(dest, fp, options);
+  dest = renameFn(dest, src, opts);
 
-  // if `options.cwd` is defined, prepend it to `src`
-  if (options.cwd) {
-    src = path.join(options.cwd, src);
-  }
-  return {src: src, dest: result};
+  // if `opts.cwd` is defined, prepend it to `src`
+  if (opts.cwd) src = path.join(opts.cwd, src);
+
+  return new File({
+    options: opts,
+    src: src,
+    dest: unixify(dest || '')
+  });
 }
 
 /**
@@ -56,31 +54,57 @@ function mapDest(src, dest, options) {
  */
 
 function renameFn(dest, src, opts) {
-  var isArray = Array.isArray(src);
-  opts = opts || {};
+  // if `opts.ext` is defined, use it to replace extension
+  if (opts.hasOwnProperty('ext')) {
+    src = replaceExt(src, opts);
+  }
+
+  // if `opts.flatten` is defined, use the `src` basename
+  if (opts.flatten) {
+    src = path.basename(src);
+  }
 
   if (typeof opts.rename === 'function') {
-    var ctx = parsePath(isArray ? src[0] : src);
+    var ctx = {};
+    ctx.src = parsePath(src || '');
+    ctx.dest = parsePath(dest || '');
     return opts.rename.call(ctx, dest, src, opts);
   }
 
-  return dest
-    ? path.join(dest, src)
-    : isArray ? '' : src;
+  if (opts.destBase) {
+    dest = path.join(opts.destBase, dest || '');
+  }
+  return dest ? path.join(dest, src) : src;
 }
 
+function filesArray(src, dest, opts) {
+  return src.map(function (fp) {
+    return mapDest(fp, dest, opts);
+  });
+}
 
-function unixify(fp) {
-  return fp.split('\\').join('/');
+/**
+ * This is a placeholder.
+ *
+ */
+
+function File(file) {
+  for (var key in file) {
+    this[key] = file[key];
+  }
+  return this;
 }
 
 function replaceExt(fp, opts) {
   var re = {first: /(\.[^\/]*)?$/, last: /(\.[^\/\.]*)?$/};
-  opts = opts || {};
   if (typeof opts.extDot === 'undefined') {
     opts.extDot = 'first';
   }
   return fp.replace(re[opts.extDot], opts.ext);
+}
+
+function unixify(fp) {
+  return fp.split('\\').join('/');
 }
 
 /**

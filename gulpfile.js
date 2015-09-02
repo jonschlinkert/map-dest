@@ -8,7 +8,7 @@ var mocha = require('gulp-mocha');
 gulp.task('jshint', function() {
   return gulp.src('*.js')
     .pipe(jshint())
-    .pipe(jshint.reporter(stylish))
+    .pipe(jshint.reporter(stylish));
 });
 
 gulp.task('test', ['jshint'], function (cb) {
