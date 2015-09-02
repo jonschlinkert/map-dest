@@ -1,8 +1,8 @@
 
-var mapDest = require('./mapDest');
+var mapDest = require('./');
 
 
-var res = mapDest('a/b/c.md', 'foo');
+var res = mapDest('c.md', 'foo', {cwd: 'a/b'});
 
 
-console.log(res)
+console.log(res);
