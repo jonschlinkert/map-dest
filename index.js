@@ -35,12 +35,19 @@ function renameFn(dest, src, opts) {
   opts = opts || {};
 
   // if `opts.ext` is defined, use it to replace extension
-  if (opts.ext) {
+  if (opts.hasOwnProperty('ext')) {
+    if (opts.ext === false) {
+      opts.ext = '';
+    }
+
     if (opts.ext.charAt(0) !== '.') {
       opts.ext = '.' + opts.ext;
     }
 
     src = replaceExt(src, opts);
+    if (src.slice(-1) === '.') {
+      src = src.slice(0, -1);
+    }
   }
 
   // if `opts.flatten` is defined, use the `src` basename

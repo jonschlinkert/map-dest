@@ -74,6 +74,18 @@ describe('options', function () {
       assert(actual[0].src === 'a/b/c.txt');
       assert(actual[0].dest === 'a/b/c.foo');
     });
+
+    it('should strip the ext when ext is an empty string:', function () {
+      var actual = mapDest('a/b/c.txt', {ext: ''});
+      assert(actual[0].src === 'a/b/c.txt');
+      assert(actual[0].dest === 'a/b/c');
+    });
+
+    it('should strip the ext when ext is `false`:', function () {
+      var actual = mapDest('a/b/c.txt', {ext: false});
+      assert(actual[0].src === 'a/b/c.txt');
+      assert(actual[0].dest === 'a/b/c');
+    });
   });
 
   describe('options.extDot', function () {
