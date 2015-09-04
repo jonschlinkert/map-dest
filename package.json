@@ -1,7 +1,7 @@
 {
   "name": "map-dest",
   "description": "Map the destination path for a file based on the given source path and options.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "homepage": "https://github.com/jonschlinkert/map-dest",
   "author": "Jon Schlinkert (https://github.com/jonschlinkert)",
   "repository": "jonschlinkert/map-dest",
@@ -54,5 +54,9 @@
         "expand-target"
       ]
     }
+  },
+  "dependencies": {
+    "expand-tilde": "^1.2.0",
+    "global-modules": "^0.2.0"
   }
 }
