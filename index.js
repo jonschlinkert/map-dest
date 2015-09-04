@@ -32,6 +32,7 @@ function mapDest(src, dest, opts) {
  */
 
 function renameFn(dest, src, opts) {
+  dest = dest || '';
   opts = opts || {};
 
   // if `opts.ext` is defined, use it to replace extension
