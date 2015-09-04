@@ -8,6 +8,8 @@
 'use strict';
 
 var path = require('path');
+var gm = require('global-modules');
+var tilde = require('expand-tilde');
 
 /**
  * Calculate destination paths.
@@ -30,8 +32,14 @@ function mapDest(src, dest, opts) {
  */
 
 function renameFn(dest, src, opts) {
+  opts = opts || {};
+
   // if `opts.ext` is defined, use it to replace extension
-  if (opts.hasOwnProperty('ext')) {
+  if (opts.ext) {
+    if (opts.ext.charAt(0) !== '.') {
+      opts.ext = '.' + opts.ext;
+    }
+
     src = replaceExt(src, opts);
   }
 
@@ -41,10 +49,11 @@ function renameFn(dest, src, opts) {
   }
 
   if (typeof opts.rename === 'function') {
-    return opts.rename(dest, src, opts || {});
+    return opts.rename(dest, src, opts);
   }
 
   if (opts.destBase) {
+    opts.destBase = resolveDir(opts.destBase);
     dest = path.join(opts.destBase, dest || '');
   }
 
@@ -68,20 +77,24 @@ function fromString(src, dest, opts) {
     dest = null;
   }
 
-  src = unixify(src);
   opts = opts || {};
 
   // use rename function to modify dest path
   dest = renameFn(dest, src, opts);
+  opts.cwd = opts.cwd || '';
+  opts.cwd = resolveDir(opts.cwd);
 
+  if (opts.srcBase) {
+    opts.cwd = path.join(opts.cwd, opts.srcBase);
+  }
   if (opts.cwd) {
     src = path.join(opts.cwd, src);
   }
 
   return {
     options: opts,
-    src: src,
-    dest: unixify(dest || '')
+    src: unixify(src),
+    dest: unixify(dest)
   };
 }
 
@@ -91,6 +104,16 @@ function replaceExt(fp, opts) {
     opts.extDot = 'first';
   }
   return fp.replace(re[opts.extDot], opts.ext);
+}
+
+function resolveDir(dir) {
+  if (dir.charAt(0) === '~') {
+    dir = tilde(dir);
+  }
+  if (dir.charAt(0) === '@') {
+    dir = path.join(gm, dir.slice(1));
+  }
+  return dir;
 }
 
 function unixify(fp) {
