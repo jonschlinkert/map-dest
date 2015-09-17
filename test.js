@@ -42,6 +42,20 @@ describe('mapDest', function () {
       assert(actual[0].src.path === 'a.txt');
       assert(actual[0].dest.path === 'dist/a.txt');
     });
+
+    it('should prepend `src.base` to src', function () {
+      var actual = mapDest({path: 'a/b/c.txt', base: 'one/two'});
+      assert(actual[0].src.path === 'one/two/a/b/c.txt');
+      assert(actual[0].dest.path === 'a/b/c.txt');
+    });
+
+    it('should prepend `src.base` to only src that specifies it.', function () {
+      var actual = mapDest([{path: 'a/b/c.txt', base: 'one/two'}, {path: 'd.txt'}]);
+      assert(actual[0].src.path === 'one/two/a/b/c.txt');
+      assert(actual[0].dest.path === 'a/b/c.txt');
+      assert(actual[1].src.path === 'd.txt');
+      assert(actual[1].dest.path === 'd.txt');
+    });
   });
 
   describe('dest', function () {
