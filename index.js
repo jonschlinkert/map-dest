@@ -24,6 +24,9 @@ function mapDest(src, dest, opts) {
   if (Array.isArray(src)) {
     return fromArray(src, dest, opts);
   }
+  if (typeof str === 'object') {
+    return [fromObject(src, dest, opts)];
+  }
   return [fromString(src, dest, opts)];
 }
 
@@ -75,35 +78,64 @@ function fromArray(src, dest, opts) {
   });
 }
 
-function fromString(src, dest, opts) {
-  if (typeof src !== 'string') {
-    throw new TypeError('expected a string');
+function fromObject(src, dest, opts) {
+  if (typeof src !== 'object') {
+    throw new TypeError('expected an object');
   }
-
-  if (typeof dest === 'object') {
+  if (typeof dest === 'object' && typeof opts === 'undefined') {
     opts = dest;
-    dest = null;
+    dest = {};
   }
-
+  if (typeof dest === 'string') {
+    var tmp = {path: dest};
+    dest = tmp;
+  }
+  dest = dest || {};
   opts = opts || {};
 
-  // use rename function to modify dest path
-  dest = renameFn(dest, src, opts);
+  dest.path = renameFn(dest.path, src.path, opts);
   opts.cwd = opts.cwd || '';
   opts.cwd = resolveDir(opts.cwd);
 
   if (opts.srcBase) {
-    opts.cwd = path.join(opts.cwd, opts.srcBase);
+    src.base = opts.srcBase;
   }
+  if (opts.destCwd) {
+    dest.cwd = opts.destCwd;
+    dest.cwd = resolveDir(dest.cwd);
+  }
+  if (opts.destBase) {
+    dest.base = opts.destBase;
+  }
+
   if (opts.cwd) {
-    src = path.join(opts.cwd, src);
+    src.path = path.join(opts.cwd, (src.base || '.'), src.path);
+  } else if (src.base) {
+    src.path = path.join(src.base, src.path);
   }
+
+  if (dest.cwd) {
+    dest.path = path.join(dest.cwd, dest.path);
+  }
+
+  src.path = unixify(src.path);
+  dest.path = unixify(dest.path);
 
   return {
     options: opts,
-    src: unixify(src),
-    dest: unixify(dest)
+    src: src,
+    dest: dest
   };
+}
+
+function fromString(src, dest, opts) {
+  if (typeof src === 'object') {
+    return fromObject(src, dest, opts);
+  }
+  if (typeof src !== 'string') {
+    throw new TypeError('expected a string');
+  }
+  return fromObject({path: src}, dest, opts);
 }
 
 function replaceExt(fp, opts) {
