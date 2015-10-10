@@ -8,8 +8,7 @@
 'use strict';
 
 var path = require('path');
-var gm = require('global-modules');
-var tilde = require('expand-tilde');
+var utils = require('./utils');
 
 /**
  * Calculate destination paths.
@@ -61,7 +60,7 @@ function renameFn(dest, src, opts) {
   }
 
   if (opts.destBase) {
-    opts.destBase = resolveDir(opts.destBase);
+    opts.destBase = utils.resolve(opts.destBase);
     dest = path.join(opts.destBase, dest || '');
   }
 
@@ -86,11 +85,14 @@ function fromString(src, dest, opts) {
   }
 
   opts = opts || {};
+  var ctx = opts;
+  ctx.src = src;
+  ctx.dest = dest;
 
   // use rename function to modify dest path
-  dest = renameFn(dest, src, opts);
+  dest = renameFn.call(ctx, dest, src, opts);
   opts.cwd = opts.cwd || '';
-  opts.cwd = resolveDir(opts.cwd);
+  opts.cwd = utils.resolve(opts.cwd);
 
   if (opts.srcBase) {
     opts.cwd = path.join(opts.cwd, opts.srcBase);
@@ -101,8 +103,8 @@ function fromString(src, dest, opts) {
 
   return {
     options: opts,
-    src: unixify(src),
-    dest: unixify(dest)
+    src: utils.normalize(src),
+    dest: utils.normalize(dest)
   };
 }
 
@@ -112,20 +114,6 @@ function replaceExt(fp, opts) {
     opts.extDot = 'first';
   }
   return fp.replace(re[opts.extDot], opts.ext);
-}
-
-function resolveDir(dir) {
-  if (dir.charAt(0) === '~') {
-    dir = tilde(dir);
-  }
-  if (dir.charAt(0) === '@') {
-    dir = path.join(gm, dir.slice(1));
-  }
-  return dir;
-}
-
-function unixify(fp) {
-  return fp.split('\\').join('/');
 }
 
 /**
