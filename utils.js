@@ -8,6 +8,7 @@ var fs = require;
  */
 
 require = utils;
+require('extend-shallow', 'extend');
 require('normalize-path', 'normalize');
 require('resolve-dir', 'resolve');
 require = fs;

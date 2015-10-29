@@ -36,18 +36,7 @@ function renameFn(dest, src, opts) {
 
   // if `opts.ext` is defined, use it to replace extension
   if (opts.hasOwnProperty('ext')) {
-    if (opts.ext === false) {
-      opts.ext = '';
-    }
-
-    if (opts.ext.charAt(0) !== '.') {
-      opts.ext = '.' + opts.ext;
-    }
-
-    src = replaceExt(src, opts);
-    if (src.slice(-1) === '.') {
-      src = src.slice(0, -1);
-    }
+    src = rewriteExt(src, opts);
   }
 
   // if `opts.flatten` is defined, use the `src` basename
@@ -85,14 +74,13 @@ function fromString(src, dest, opts) {
   }
 
   opts = opts || {};
-  var ctx = opts;
+  var ctx = utils.extend({}, opts);
   ctx.src = src;
   ctx.dest = dest;
 
   // use rename function to modify dest path
   dest = renameFn.call(ctx, dest, src, opts);
-  opts.cwd = opts.cwd || '';
-  opts.cwd = utils.resolve(opts.cwd);
+  opts.cwd = utils.resolve(opts.cwd || '');
 
   if (opts.srcBase) {
     opts.cwd = path.join(opts.cwd, opts.srcBase);
@@ -114,6 +102,22 @@ function replaceExt(fp, opts) {
     opts.extDot = 'first';
   }
   return fp.replace(re[opts.extDot], opts.ext);
+}
+
+function rewriteExt(fp, opts) {
+  if (opts.ext === false) {
+    opts.ext = '';
+  }
+
+  if (opts.ext.charAt(0) !== '.') {
+    opts.ext = '.' + opts.ext;
+  }
+
+  fp = replaceExt(fp, opts);
+  if (fp.slice(-1) === '.') {
+    fp = fp.slice(0, -1);
+  }
+  return fp;
 }
 
 /**
