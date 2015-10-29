@@ -21,12 +21,13 @@
     "test": "mocha"
   },
   "dependencies": {
-    "global-modules": "^0.2.0",
-    "lazy-cache": "^0.2.3",
+    "extend-shallow": "^2.0.1",
+    "lazy-cache": "^0.2.4",
     "normalize-path": "^2.0.0",
     "resolve-dir": "^0.1.0"
   },
   "devDependencies": {
+    "global-modules": "^0.2.0",
     "gulp": "^3.9.0",
     "gulp-istanbul": "^0.10.0",
     "gulp-jshint": "^1.11.2",
@@ -41,9 +42,9 @@
     "dest",
     "destination",
     "expand",
+    "files",
     "files array",
     "files object",
-    "files",
     "normalize",
     "options",
     "src",
