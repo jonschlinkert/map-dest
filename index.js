@@ -23,6 +23,9 @@ function mapDest(src, dest, opts) {
   if (Array.isArray(src)) {
     return fromArray(src, dest, opts);
   }
+  if (typeof src === 'object') {
+    return fromObject(src, dest, opts);
+  }
   return [fromString(src, dest, opts)];
 }
 
@@ -55,6 +58,27 @@ function renameFn(dest, src, opts) {
 
   var fp = typeof src === 'string' ? src : '';
   return dest ? path.join(dest, fp) : fp;
+}
+
+function fromObject(obj, dest, opts) {
+  if (typeof dest === 'object') {
+    opts = dest;
+    dest = null;
+  }
+  var src = obj.src;
+  if (!src) {
+    src = opts.src;
+    delete opts.src;
+  }
+  if (!dest) {
+    dest = obj.dest;
+    delete obj.dest;
+  }
+  if (!dest) {
+    dest = opts.dest;
+    delete opts.dest;
+  }
+  return mapDest(src, dest, opts);
 }
 
 function fromArray(src, dest, opts) {
